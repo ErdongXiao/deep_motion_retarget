@@ -15,8 +15,8 @@ class RobotDataset(Dataset):
                 self.joint_positions.extend(data['joint_pos'])
                 self.foot_trajectories.extend(data['feet_pos'])
 
-        self.joint_positions = torch.tensor(self.joint_positions, dtype=torch.float32)
-        self.foot_trajectories = torch.tensor(self.foot_trajectories, dtype=torch.float32)
+        self.joint_positions = torch.tensor(self.joint_positions, dtype=torch.float32, device="cuda:0")
+        self.foot_trajectories = torch.tensor(self.foot_trajectories, dtype=torch.float32, device="cuda:0")
 
     def __len__(self):
         return len(self.joint_positions)
@@ -30,17 +30,18 @@ class RobotDataset(Dataset):
 class ForwardKinematicsModel(nn.Module):
     def __init__(self):
         super(ForwardKinematicsModel, self).__init__()
-        self.fc1 = nn.Linear(12, 64)
-        self.fc2 = nn.Linear(64, 256)
-        self.fc3 = nn.Linear(256, 64)
-        self.fc4 = nn.Linear(64, 4 * 3)  # Output has 4 legs with 3 coordinates each
+        self.fc1 = nn.Linear(12, 64).to("cuda:0")
+        self.fc2 = nn.Linear(64, 256).to("cuda:0")
+        self.fc3 = nn.Linear(256, 64).to("cuda:0")
+        self.fc4 = nn.Linear(64, 4 * 3).to("cuda:0")  # Output has 4 legs with 3 coordinates each
 
     def forward(self, x):
-        x = torch.tanh(self.fc1(x))
-        x = torch.tanh(self.fc2(x))
-        x = torch.tanh(self.fc3(x))
-        x = self.fc4(x)
+        x = torch.tanh(self.fc1(x)).to("cuda:0")
+        x = torch.tanh(self.fc2(x)).to("cuda:0")
+        x = torch.tanh(self.fc3(x)).to("cuda:0")
+        x = self.fc4(x).to("cuda:0")
         return x
+
 if __name__  == "__main__":
 
     # Custom dataset class for loading data

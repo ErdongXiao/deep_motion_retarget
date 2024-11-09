@@ -22,8 +22,12 @@ class MotionRetargetingModel(nn.Module):
 
 if __name__  == "__main__":
     file = open("wtw_ref_go1_pacing.pkl", "rb")
-    go1_input = [pkl.load(file)["joint_pos"]]
-    go1_input = torch.tensor(go1_input)
-    lstm_model = MotionRetargetingModel(input_size=12, hidden_size=64, num_layers=2, output_size=12)
-    lstm_model.load_state_dict(torch.load('motion_retargeting_model_from_go1_to_aliengo.pt'))
-    print(lstm_model(go1_input))
+    resized_joint_pos = []
+    data = pkl.load(file)
+    for i in range(len(data["feet_pos"])-20):
+        resized_joint_pos += [data["joint_pos"][i:i+20]]
+    resized_joint_pos = torch.tensor(resized_joint_pos, device="cuda:0")
+    # lstm_model = MotionRetargetingModel(input_size=12, hidden_size=64, num_layers=2, output_size=12)
+    # lstm_model.load_state_dict(torch.load('motion_retargeting_model_from_go1_to_aliengo_len=20.pt'))
+    lstm_model = torch.load('motion_retargeting_model_from_go1_to_aliengo_len=20.pt')
+    print(lstm_model(resized_joint_pos))
